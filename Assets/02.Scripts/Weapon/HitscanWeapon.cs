@@ -28,7 +28,8 @@ public class HitscanWeapon : WeaponBase
             float yawOffset = (i - center) * _data.SpreadAngle;
             Vector3 direction = Quaternion.Euler(0f, yawOffset, 0f) * camera.transform.forward;
             Ray ray = new Ray(camera.transform.position, direction);
-            if (Physics.Raycast(ray, out RaycastHit hitInfo, _data.Range))
+            // 3인칭에서는 카메라가 플레이어 뒤에 있으므로 플레이어 자신은 맞지 않게 제외한다.
+            if (Physics.Raycast(ray, out RaycastHit hitInfo, _data.Range, ~LayerMask.GetMask("Player")))
             {
                 PlayHitEffect(hitInfo);
                 hitInfo.collider.GetComponent<IDamageAble>()?.TakeDamage(new DamageInfo

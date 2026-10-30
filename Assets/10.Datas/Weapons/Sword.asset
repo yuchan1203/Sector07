@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponData
   _type: 6
   _category: 2
-  _damage: 50
+  _damage: 10
   _fireInterval: 0.9
   _magazineSize: 1
   _canReload: 0
@@ -40,4 +40,4 @@ MonoBehaviour:
   _meleeRange: 1.2
   _meleeRadius: 1
   _meleeHitDelay: 0.45
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: e213fe1226bd2c44db3af48df5459ce0, type: 3}
