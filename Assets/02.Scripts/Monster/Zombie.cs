@@ -28,6 +28,8 @@ public class Zombie : MonoBehaviour, IDamageAble
 
     [Header("연결")]
     [SerializeField] private GameObject _bloodSprayPrefab;
+    [Tooltip("핏자국 이펙트가 반복 재생되므로 이 시간 뒤에 풀로 돌려보낸다(초)")]
+    [SerializeField] private float _bloodSprayDuration = 1f;
     [SerializeField] private GameObject _damageTextPrefab;
     [SerializeField] private Transform _textSpawnPoint;
 
@@ -123,9 +125,7 @@ public class Zombie : MonoBehaviour, IDamageAble
         ShowDamageText(damageInfo.Value);
         if (_health > 0f)
         {
-            GameObject bloodSpray = Instantiate(_bloodSprayPrefab, transform);
-            bloodSpray.transform.position = damageInfo.HitPoint;
-            bloodSpray.transform.forward = damageInfo.HitNormal;
+            PoolManager.Spawn(_bloodSprayPrefab, damageInfo.HitPoint, Quaternion.LookRotation(damageInfo.HitNormal), transform, _bloodSprayDuration);
             _state = ZombieState.Hit;
             StartCoroutine(Hit_Coroutine());
         }
@@ -177,7 +177,7 @@ public class Zombie : MonoBehaviour, IDamageAble
         {
             return;
         }
-        GameObject textObj = Instantiate(_damageTextPrefab, _textSpawnPoint.position, Quaternion.identity);
+        GameObject textObj = PoolManager.Spawn(_damageTextPrefab, _textSpawnPoint.position, Quaternion.identity);
         // 3D TextMeshPro(TextMeshPro)와 UI용(TextMeshProUGUI) 모두 TMP_Text를 상속한다.
         TMP_Text tmp = textObj.GetComponentInChildren<TMP_Text>();
         if (tmp != null)

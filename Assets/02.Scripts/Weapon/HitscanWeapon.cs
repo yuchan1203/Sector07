@@ -51,9 +51,7 @@ public class HitscanWeapon : WeaponBase
         {
             return;
         }
-        ParticleSystem effect = Object.Instantiate(_data.HitEffectPrefab);
-        effect.transform.position = hitInfo.point;
-        effect.transform.forward = hitInfo.normal;
+        ParticleSystem effect = PoolManager.Spawn(_data.HitEffectPrefab, hitInfo.point, Quaternion.LookRotation(hitInfo.normal));
         effect.Play();
     }
 }

@@ -19,9 +19,15 @@ public class DamageTextEffect : MonoBehaviour
     private Vector3 _baseScale;
     private float _elapsedTime = 0f;
 
-    private void Start()
+    private void Awake()
     {
         _baseScale = transform.localScale;
+    }
+
+    // 풀에서 다시 꺼낼 때마다 위치를 흩뜨리고 크기를 처음으로 되돌린다.
+    private void OnEnable()
+    {
+        _elapsedTime = 0f;
         ApplyRandomOffset();
         ApplyScale(0f);
     }

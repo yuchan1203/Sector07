@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
 using TMPro;
 
 public class CameraViewSwitcher : MonoBehaviour
@@ -28,6 +29,10 @@ public class CameraViewSwitcher : MonoBehaviour
     [Header("Fade")]
     [SerializeField] private bool _useFade = false;
     [SerializeField] private float _fadeDuration = 0.5f;
+
+    [Header("1인칭 최적화")]
+    [Tooltip("1인칭에서는 화면에 보이지 않으므로 그림자만 그리는 플레이어 몸 렌더러")]
+    [SerializeField] private Renderer[] _firstPersonHiddenRenderers;
 
     private CameraOrbitAngles _orbitAngles;
     private readonly CameraRecoil _recoil = new CameraRecoil();
@@ -114,6 +119,7 @@ public class CameraViewSwitcher : MonoBehaviour
             _orbitAngles = new CameraOrbitAngles(_views, _currentMode);
         }
         UpdateViewStateText();
+        UpdateBodyVisibility();
     }
 
     private void Update()
@@ -264,6 +270,26 @@ public class CameraViewSwitcher : MonoBehaviour
     {
         _currentMode = next;
         UpdateViewStateText();
+        UpdateBodyVisibility();
+    }
+
+    // 1인칭에서는 몸을 그리지 않고 그림자만 남겨 정점 처리 비용을 줄인다.
+    private void UpdateBodyVisibility()
+    {
+        if (_firstPersonHiddenRenderers == null)
+        {
+            return;
+        }
+        ShadowCastingMode mode = _currentMode == CameraState.FirstPerson
+            ? ShadowCastingMode.ShadowsOnly
+            : ShadowCastingMode.On;
+        foreach (Renderer bodyRenderer in _firstPersonHiddenRenderers)
+        {
+            if (bodyRenderer != null)
+            {
+                bodyRenderer.shadowCastingMode = mode;
+            }
+        }
     }
 
     private void UpdateViewStateText()
