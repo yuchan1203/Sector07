@@ -3,11 +3,8 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using TMPro;
 
-public class CameraViewSwitcher : MonoBehaviour
+public class CameraViewSwitcher : SingletonBehaviour<CameraViewSwitcher>
 {
-    private static CameraViewSwitcher _instance = null;
-    public static CameraViewSwitcher Instance => _instance;
-
     private static readonly int CameraStateCount = System.Enum.GetValues(typeof(CameraState)).Length;
 
     [SerializeField] private TextMeshProUGUI _viewStateText;
@@ -69,13 +66,13 @@ public class CameraViewSwitcher : MonoBehaviour
         }
     }
 
-    private void Awake()
+    protected override void Awake()
     {
-        if (_instance != null && _instance != this)
+        if (Instance != null && Instance != this)
         {
             GameLogger.LogWarning("CameraViewSwitcher가 씬에 둘 이상 있습니다.");
         }
-        _instance = this;
+        base.Awake();
 
         if (_target == null)
         {
@@ -101,14 +98,6 @@ public class CameraViewSwitcher : MonoBehaviour
         if (_camera != null)
         {
             _baseFieldOfView = _camera.fieldOfView;
-        }
-    }
-
-    private void OnDestroy()
-    {
-        if (_instance == this)
-        {
-            _instance = null;
         }
     }
 

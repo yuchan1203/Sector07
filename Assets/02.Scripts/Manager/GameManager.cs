@@ -3,10 +3,8 @@ using System.Collections;
 using TMPro;
 using UnityEngine.SceneManagement;
 
-public class GameManager : MonoBehaviour
+public class GameManager : SingletonBehaviour<GameManager>
 {
-    private static GameManager _instance = null;
-    public static GameManager Instance => _instance;
     private GameState _gameState = GameState.Ready;
     public GameState GameState => _gameState;
 
@@ -14,27 +12,18 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Animator _playerAnimator;
     [Header("일시정지 UI")]
     [SerializeField] private GameObject _stopUI;
+    [Header("게임오버 UI")]
+    [SerializeField] private GameObject _gameOverUI;
     [Header("커서")]
     [SerializeField] private CursorManager _cursorManager;
 
-    private void Awake()
+    protected override void OnDestroy()
     {
-        if (_instance != null)
+        if (Instance == this)
         {
-            Destroy(gameObject);
-            return;
-        }
-        // 씬을 다시 불러올 때 상태와 UI 참조가 새로 초기화되도록 DontDestroyOnLoad를 쓰지 않는다.
-        _instance = this;
-    }
-
-    private void OnDestroy()
-    {
-        if (_instance == this)
-        {
-            _instance = null;
             Time.timeScale = 1f;
         }
+        base.OnDestroy();
     }
 
     private void Update()
@@ -119,8 +108,18 @@ public class GameManager : MonoBehaviour
         Application.Quit();
 #endif
     }
+    private void SetGameOverUIActive(bool active)
+    {
+        if (_gameOverUI != null)
+        {
+            _gameOverUI.SetActive(active);
+        }
+    }
+
     private void Start()
     {
+        SetStopUIActive(false);
+        SetGameOverUIActive(false);
         StartCoroutine(StartSequence_Coroutine());
     }
     private IEnumerator StartSequence_Coroutine()
@@ -149,11 +148,13 @@ public class GameManager : MonoBehaviour
         if (_cursorManager != null)
         {
             _cursorManager.SetAltPeekEnabled(false);
+            _cursorManager.UnlockCursor();
         }
         _stateText.gameObject.SetActive(true);
         _gameState = GameState.GameOver;
         _stateText.text = "게임오버";
         _stateText.color = Color.red;
+        SetGameOverUIActive(true);
         if (_playerAnimator != null)
         {
             _playerAnimator.SetFloat(AnimatorParams.MoveMotion, 0f);
