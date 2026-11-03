@@ -12,6 +12,10 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI _stateText;
     [SerializeField] private Animator _playerAnimator;
+    [Header("일시정지 UI")]
+    [SerializeField] private GameObject _stopUI;
+    [Header("커서")]
+    [SerializeField] private CursorManager _cursorManager;
 
     private void Awake()
     {
@@ -58,20 +62,62 @@ public class GameManager : MonoBehaviour
             _stateText.gameObject.SetActive(true);
             _stateText.color = Color.white;
             _stateText.text = "일시정지";
+            SetStopUIActive(true);
+            if (_cursorManager != null)
+            {
+                _cursorManager.SetAltPeekEnabled(false);
+                _cursorManager.UnlockCursor();
+            }
         }
         else if (_gameState == GameState.Pause)
         {
-            _gameState = GameState.Playing;
-            Time.timeScale = 1f;
-            _stateText.text = "";
-            _stateText.gameObject.SetActive(false);
+            Resume();
         }
     }
 
-    private void Restart()
+    private void SetStopUIActive(bool active)
+    {
+        if (_stopUI != null)
+        {
+            _stopUI.SetActive(active);
+        }
+    }
+
+    // 계속하기 버튼 OnClick
+    public void Resume()
+    {
+        if (_gameState != GameState.Pause)
+        {
+            return;
+        }
+        _gameState = GameState.Playing;
+        Time.timeScale = 1f;
+        _stateText.text = "";
+        _stateText.gameObject.SetActive(false);
+        SetStopUIActive(false);
+        if (_cursorManager != null)
+        {
+            _cursorManager.LockCursor();
+            _cursorManager.SetAltPeekEnabled(true);
+        }
+    }
+
+    // 다시 시작 버튼 OnClick
+    public void Restart()
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    // 게임 종료 버튼 OnClick
+    public void QuitGame()
+    {
+        Time.timeScale = 1f;
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
     private void Start()
     {
@@ -92,10 +138,18 @@ public class GameManager : MonoBehaviour
         _stateText.text = "";
         _stateText.gameObject.SetActive(false);
         _gameState = GameState.Playing;
+        if (_cursorManager != null)
+        {
+            _cursorManager.SetAltPeekEnabled(true);
+        }
     }
 
     public void GameOver()
     {
+        if (_cursorManager != null)
+        {
+            _cursorManager.SetAltPeekEnabled(false);
+        }
         _stateText.gameObject.SetActive(true);
         _gameState = GameState.GameOver;
         _stateText.text = "게임오버";

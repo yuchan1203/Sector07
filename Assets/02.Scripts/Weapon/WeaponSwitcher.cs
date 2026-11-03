@@ -195,7 +195,7 @@ public class WeaponSwitcher : MonoBehaviour
             return;
         }
         WeaponData data = CurrentWeapon.Data;
-        bool isAiming = data.CanAim && Input.GetButton("Fire2");
+        bool isAiming = data.CanAim && Input.GetMouseButton(1);
         viewSwitcher.SetAimMultiplier(isAiming ? data.AimMultiplier : 1f);
     }
 
