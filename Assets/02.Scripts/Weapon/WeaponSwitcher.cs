@@ -10,6 +10,13 @@ public class WeaponSwitcher : MonoBehaviour
     [Tooltip("C 키로 이 순서대로 무기를 바꾼다. 새 무기는 WeaponData 에셋을 만들어 여기에 추가한다.")]
     [SerializeField] private List<WeaponData> _weaponDatas = new List<WeaponData>();
 
+    [Tooltip("처음부터 쓸 수 있는 무기. 비워 두면 목록의 모든 무기를 쓴다. 나머지는 Unlock으로 획득한다.")]
+    [SerializeField] private List<WeaponData> _startingWeapons = new List<WeaponData>();
+
+    [Header("1인칭 모델")]
+    [Tooltip("카메라 아래에 둔 WeaponViewModelRoot. 무기 모델이 이 아래에 생긴다.")]
+    [SerializeField] private WeaponViewModelRoot _viewModelRoot;
+
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI _weaponStateText;
     [SerializeField] private TextMeshProUGUI _bulletText;
@@ -22,6 +29,9 @@ public class WeaponSwitcher : MonoBehaviour
     private const int NoAmmoDisplay = -2;
 
     private readonly List<IWeapon> _weapons = new List<IWeapon>();
+    // _weapons와 같은 순서로 해금 여부와 1인칭 모델을 들고 있다.
+    private readonly List<bool> _unlocked = new List<bool>();
+    private readonly List<GameObject> _viewModels = new List<GameObject>();
     // F 키 빠른 근접 공격에 쓰는 무기. 목록의 첫 근접 무기다.
     private IWeapon _meleeWeapon;
     private Animator _animator;
@@ -52,6 +62,8 @@ public class WeaponSwitcher : MonoBehaviour
             if (weapon != null)
             {
                 _weapons.Add(weapon);
+                _unlocked.Add(_startingWeapons.Count == 0 || _startingWeapons.Contains(data));
+                _viewModels.Add(CreateViewModel(data));
                 if (_meleeWeapon == null && data.Category == WeaponCategory.Melee)
                 {
                     _meleeWeapon = weapon;
@@ -63,6 +75,15 @@ public class WeaponSwitcher : MonoBehaviour
         {
             GameLogger.LogError("WeaponSwitcher: 사용할 무기 데이터가 없습니다.");
         }
+        else
+        {
+            _currentIndex = Mathf.Max(0, _unlocked.IndexOf(true));
+            if (!_unlocked[_currentIndex])
+            {
+                GameLogger.LogWarning("WeaponSwitcher: 시작 무기가 목록에 없습니다.");
+            }
+        }
+        ShowCurrentViewModel();
 
         if (_reloadText != null)
         {
@@ -87,10 +108,90 @@ public class WeaponSwitcher : MonoBehaviour
         {
             return;
         }
+        // 해금된 다음 무기로 넘어간다. 쓸 수 있는 무기가 하나뿐이면 바꾸지 않는다.
+        for (int step = 1; step < _weapons.Count; step++)
+        {
+            int next = (_currentIndex + step) % _weapons.Count;
+            if (_unlocked[next])
+            {
+                Equip(next);
+                return;
+            }
+        }
+    }
+
+    // 무기를 획득한다. 새로 얻었으면 true, 이미 가지고 있었으면 false.
+    public bool Unlock(WeaponData data, bool equip)
+    {
+        int index = _weapons.FindIndex(w => w.Data == data);
+        if (index < 0)
+        {
+            GameLogger.LogWarning("WeaponSwitcher: 목록에 없는 무기는 획득할 수 없습니다. (" + (data != null ? data.name : "null") + ")");
+            return false;
+        }
+        if (_unlocked[index])
+        {
+            return false;
+        }
+        _unlocked[index] = true;
+        if (equip)
+        {
+            Equip(index);
+        }
+        return true;
+    }
+
+    public bool IsUnlocked(WeaponData data)
+    {
+        int index = _weapons.FindIndex(w => w.Data == data);
+        return index >= 0 && _unlocked[index];
+    }
+
+    private void Equip(int index)
+    {
+        if (index == _currentIndex)
+        {
+            return;
+        }
         CurrentWeapon.OnUnequip();
-        _currentIndex = (_currentIndex + 1) % _weapons.Count;
+        _currentIndex = index;
+        ShowCurrentViewModel();
         UpdateWeaponStateText();
         UpdateBulletText();
+    }
+
+    private GameObject CreateViewModel(WeaponData data)
+    {
+        if (_viewModelRoot == null || data.ViewModelPrefab == null)
+        {
+            return null;
+        }
+        GameObject model = Instantiate(data.ViewModelPrefab, _viewModelRoot.transform);
+        model.transform.localPosition = data.ViewModelPosition;
+        model.transform.localRotation = Quaternion.Euler(data.ViewModelRotation);
+        model.transform.localScale = Vector3.one * data.ViewModelScale;
+        foreach (Collider modelCollider in model.GetComponentsInChildren<Collider>())
+        {
+            modelCollider.enabled = false;
+        }
+        // 무기 모델이 몸 레이어에 걸려 그림자나 판정을 만들지 않도록 그림자는 끈다.
+        foreach (Renderer modelRenderer in model.GetComponentsInChildren<Renderer>())
+        {
+            modelRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        }
+        model.SetActive(false);
+        return model;
+    }
+
+    private void ShowCurrentViewModel()
+    {
+        for (int i = 0; i < _viewModels.Count; i++)
+        {
+            if (_viewModels[i] != null)
+            {
+                _viewModels[i].SetActive(i == _currentIndex);
+            }
+        }
     }
 
     private void Update()
@@ -124,7 +225,7 @@ public class WeaponSwitcher : MonoBehaviour
         _fireTimer -= Time.deltaTime;
         bool isPointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
 
-        if (Input.GetKeyDown(KeyCode.F) && _meleeWeapon != null)
+        if (Input.GetKeyDown(KeyCode.F) && _meleeWeapon != null && IsUnlocked(_meleeWeapon.Data))
         {
             TryAttack(_meleeWeapon);
         }
@@ -171,6 +272,11 @@ public class WeaponSwitcher : MonoBehaviour
 
     private void OnShot(IWeapon weapon)
     {
+        // F 키 빠른 근접 공격은 들고 있는 모델이 아니라서 손동작을 주지 않는다.
+        if (_viewModelRoot != null && weapon == CurrentWeapon)
+        {
+            _viewModelRoot.Kick(weapon.Data.Category);
+        }
         if (_animator == null)
         {
             return;

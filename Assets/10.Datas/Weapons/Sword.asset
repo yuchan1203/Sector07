@@ -41,3 +41,8 @@ MonoBehaviour:
   _meleeRadius: 1
   _meleeHitDelay: 0.45
   _icon: {fileID: 21300000, guid: e213fe1226bd2c44db3af48df5459ce0, type: 3}
+  _displayName: "\uAC80"
+  _viewModelPrefab: {fileID: 5651402458575486093, guid: b84fe35b914023748b06fd3b37dceaa4, type: 3}
+  _viewModelPosition: {x: 0.24, y: -0.28, z: 0.42}
+  _viewModelRotation: {x: 50, y: 0, z: -8}
+  _viewModelScale: 0.22

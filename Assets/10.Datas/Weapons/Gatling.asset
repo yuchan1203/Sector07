@@ -37,4 +37,12 @@ MonoBehaviour:
   _maxForceMultiplier: 2
   _useFuse: 0
   _fuseTime: 3
+  _meleeRange: 1.2
+  _meleeRadius: 1
+  _meleeHitDelay: 0.45
   _icon: {fileID: 21300000, guid: f5ffb2b711843a34cb483c67a5cc945c, type: 3}
+  _displayName: "\uAE30\uAD00\uCD1D"
+  _viewModelPrefab: {fileID: 1261748888023320, guid: 432643b6e5110004083fdff3e33e490b, type: 3}
+  _viewModelPosition: {x: 0.2, y: -0.19, z: 0.7}
+  _viewModelRotation: {x: 0, y: 180, z: 0}
+  _viewModelScale: 1

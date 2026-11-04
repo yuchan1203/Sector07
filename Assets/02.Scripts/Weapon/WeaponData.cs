@@ -66,6 +66,15 @@ public class WeaponData : ScriptableObject
 
     [Header("UI")]
     [SerializeField] private Sprite _icon;
+    [Tooltip("획득 안내 등에 쓰는 한국어 이름")]
+    [SerializeField] private string _displayName;
+
+    [Header("1인칭 모델")]
+    [SerializeField] private GameObject _viewModelPrefab;
+    [Tooltip("카메라 기준 위치/회전/크기. 무기 모델마다 맞춰 준다.")]
+    [SerializeField] private Vector3 _viewModelPosition = new Vector3(0.18f, -0.18f, 0.4f);
+    [SerializeField] private Vector3 _viewModelRotation = Vector3.zero;
+    [SerializeField] private float _viewModelScale = 1f;
 
     public WeaponType Type => _type;
     public WeaponCategory Category => _category;
@@ -106,6 +115,12 @@ public class WeaponData : ScriptableObject
     public float MeleeHitDelay => _meleeHitDelay;
 
     public Sprite Icon => _icon;
+    public string DisplayName => string.IsNullOrEmpty(_displayName) ? _type.ToString() : _displayName;
+
+    public GameObject ViewModelPrefab => _viewModelPrefab;
+    public Vector3 ViewModelPosition => _viewModelPosition;
+    public Vector3 ViewModelRotation => _viewModelRotation;
+    public float ViewModelScale => _viewModelScale;
 
     private void OnValidate()
     {

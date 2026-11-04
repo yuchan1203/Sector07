@@ -41,3 +41,8 @@ MonoBehaviour:
   _meleeRadius: 1
   _meleeHitDelay: 0.45
   _icon: {fileID: 21300000, guid: 9ce42d2be27c9b943bd3ab9560ee1785, type: 3}
+  _displayName: "\uC2A4\uB098\uC774\uD37C"
+  _viewModelPrefab: {fileID: 1829597508155286, guid: 7359baf27e84aa44cafac3788c8be0f1, type: 3}
+  _viewModelPosition: {x: 0.2, y: -0.19, z: 0.85}
+  _viewModelRotation: {x: 0, y: 180, z: 0}
+  _viewModelScale: 1

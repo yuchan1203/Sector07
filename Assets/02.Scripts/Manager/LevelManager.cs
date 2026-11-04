@@ -25,6 +25,10 @@ public class StageInfo
     [Tooltip("Survive 버틸 시간(초)")]
     [SerializeField] private float _surviveSeconds = 30f;
 
+    [Tooltip("이 단계를 마치면 얻는 무기 (선택)")]
+    [SerializeField] private WeaponData _rewardWeapon;
+
+    public WeaponData RewardWeapon => _rewardWeapon;
     public string Title => _title;
     public ObjectiveType Type => _type;
     public GameObject ZombieGroup => _zombieGroup;
@@ -179,8 +183,22 @@ public class LevelManager : SingletonBehaviour<LevelManager>
         }
     }
 
+    private void GiveReward(StageInfo stage)
+    {
+        if (stage.RewardWeapon == null || _player == null)
+        {
+            return;
+        }
+        WeaponSwitcher switcher = _player.GetComponent<WeaponSwitcher>();
+        if (switcher != null && switcher.Unlock(stage.RewardWeapon, true))
+        {
+            NoticeUI.Show(stage.RewardWeapon.DisplayName + " 획득!  [C] 키로 무기 교체");
+        }
+    }
+
     private void CompleteStage()
     {
+        GiveReward(CurrentStage);
         if (_stageIndex + 1 < StageCount)
         {
             StartStage(_stageIndex + 1);
