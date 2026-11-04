@@ -18,14 +18,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 아키텍처
 
-- **게임 상태 흐름**: `GameManager`(싱글톤, `DontDestroyOnLoad`)가 `GameState`(Ready → Playing → GameOver)를 보유한다. 시작 시 코루틴으로 "준비/시작" 연출 후 Playing으로 전환한다. 플레이어/좀비의 `Update`는 `GameManager.Instance.GameState != GameState.Playing`이면 즉시 return하는 가드를 공통으로 사용하므로, 새 행동 스크립트에도 같은 가드를 넣는다.
-- **데미지 계약**: `Core/IDamageAble.TakeDamage(DamageInfo)`와 `DamageInfo`(Value, HitPoint, HitNormal) 구조체. 총(`PlayerGunFire`), 폭탄(`Bomb`) 등 공격 쪽은 대상의 구체 클래스를 모르고 `IDamageAble`만 호출한다. `Zombie`, `Box`, `Drum`, `PlayerHit` 등이 이를 구현한다. 새 피격 대상은 이 인터페이스를 구현한다.
+- **게임 상태 흐름**: `GameManager`(씬 단위 싱글톤)가 `GameState`(Ready → Playing → Pause/GameOver/Clear)를 보유한다. 시작 시 코루틴으로 "준비/시작" 연출 후 Playing으로 전환한다. 플레이어/좀비의 `Update`는 `GameManager.Instance.GameState != GameState.Playing`이면 즉시 return하는 가드를 공통으로 사용하므로, 새 행동 스크립트에도 같은 가드를 넣는다.
+- **데미지 계약**: `Core/IDamageAble.TakeDamage(DamageInfo)`와 `DamageInfo`(Value, HitPoint, HitNormal) 구조체. 총(`HitscanWeapon`), 근접(`MeleeWeapon`), 폭탄(`BombProjectile`) 등 공격 쪽은 대상의 구체 클래스를 모르고 `IDamageAble`만 호출한다. `Zombie`, `Box`, `Drum`, `PlayerHit` 등이 이를 구현한다. 새 피격 대상은 이 인터페이스를 구현한다.
 - **좀비 AI**: `Zombie`가 `ZombieState`(Idle/Trace/Comeback/Attack) 열거형 기반의 switch 상태머신으로 동작하며 `CharacterController`로 이동한다. 플레이어는 `Player` 태그로 `Start`에서 찾는다. 체력바는 `ZombieHealthBar`가 별도 컴포넌트로 표시한다.
-- **UI**: `UI_PlayerStats`(체력바, 총알 텍스트)는 플레이어 컴포넌트의 공개 읽기 프로퍼티(`BulletCount`, `MaxBulletCount` 등)를 조회해 표시한다. `UI_Minimap`은 `MinimapCamera`와 함께 동작한다.
+- **UI**: `UI_PlayerStats/PlayerHealthBar`는 `PlayerHit.HealthChanged`, `PlayerMove.StaminaChanged` 이벤트로 체력바와 스태미나바를 갱신하고, 총알 텍스트는 `WeaponSwitcher`가 `CurrentAmmo`/`CurrentMaxAmmo`로 갱신한다. `UI_Minimap`은 `MinimapCamera`와 함께 동작한다.
 - **씬 이동**: 씬을 바꿀 때는 `SceneManager.LoadScene`을 직접 부르지 않고 `SceneLoader.Load(씬 이름, 문구, 최소 대기 시간)`을 쓴다. 가벼운 `LoadingScene`을 먼저 열어 이전 씬을 내린 뒤 `LoadingUI`가 목표 씬을 비동기로 불러온다. 새 씬은 Build Settings에 추가해야 한다.
 - **효과음**: `SoundManager`(씬마다 하나)가 `SoundBank` 에셋(`Assets/10.Datas/SoundBank.asset`)의 `SfxId`별 클립을 재생한다. 코드에서는 `SoundManager.Play(SfxId)`(화면 소리), `SoundManager.PlayAt(SfxId, 위치)`(위치 소리)만 호출하며, 씬에 매니저가 없으면 조용히 무시된다. 무기별 소리는 `WeaponData`의 `SfxId` 필드로 정한다. 새 소리는 `SfxId` 맨 아래에 추가하고 `SoundBank`에 연결한다.
 - **로깅**: `GameLogger.Log`는 `[Conditional("ENABLE_LOG")]`이므로 스크립팅 심볼 `ENABLE_LOG`가 정의된 경우에만 호출이 컴파일된다. Warning/Error는 항상 출력된다. `Debug.Log` 대신 `GameLogger`를 사용한다.
-- **입력**: 프로젝트에 `InputSystem_Actions.inputactions`가 있지만, 현재 스크립트(예: `PlayerGunFire`)는 레거시 `Input.GetKeyDown`/`GetButton`을 사용한다. 기존 코드 스타일에 맞춰 작성하되, 입력 방식을 바꿀 때는 Player Settings의 Active Input Handling 설정을 확인한다.
+- **입력**: 프로젝트에 `InputSystem_Actions.inputactions`가 있지만, 현재 스크립트(예: `WeaponSwitcher`, `PlayerMove`)는 레거시 `Input.GetKeyDown`/`GetButton`을 사용한다. 기존 코드 스타일에 맞춰 작성하되, 입력 방식을 바꿀 때는 Player Settings의 Active Input Handling 설정을 확인한다.
 
 ## 코드 컨벤션 (기존 코드 기준)
 
