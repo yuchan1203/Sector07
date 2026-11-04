@@ -32,7 +32,7 @@ public class GameManager : SingletonBehaviour<GameManager>
         {
             TogglePause();
         }
-        else if (Input.GetKeyDown(KeyCode.R) && _gameState == GameState.GameOver)
+        else if (Input.GetKeyDown(KeyCode.R) && (_gameState == GameState.GameOver || _gameState == GameState.Clear))
         {
             Restart();
         }
@@ -140,6 +140,25 @@ public class GameManager : SingletonBehaviour<GameManager>
         if (_cursorManager != null)
         {
             _cursorManager.SetAltPeekEnabled(true);
+        }
+    }
+
+    // 모든 목표를 마쳤을 때 LevelManager가 부른다. 결과 화면은 LevelManager가 띄운다.
+    public void GameClear()
+    {
+        if (_gameState != GameState.Playing)
+        {
+            return;
+        }
+        _gameState = GameState.Clear;
+        if (_cursorManager != null)
+        {
+            _cursorManager.SetAltPeekEnabled(false);
+            _cursorManager.UnlockCursor();
+        }
+        if (_playerAnimator != null)
+        {
+            _playerAnimator.SetFloat(AnimatorParams.MoveMotion, 0f);
         }
     }
 

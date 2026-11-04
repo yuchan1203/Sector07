@@ -56,6 +56,8 @@ public class Zombie : MonoBehaviour, IDamageAble
     private float _attackTimer = 0f;
     private bool _isAttacking = false;
     public event System.Action HealthChanged;
+    // 좀비가 쓰러지는 순간 한 번 알린다. (목표 집계용)
+    public static event System.Action<Zombie> Died;
     public float Health => _health;
     public float MaxHealth => _maxHealth;
     private void Awake()
@@ -133,6 +135,7 @@ public class Zombie : MonoBehaviour, IDamageAble
         {
             _state = ZombieState.Death;
             StartCoroutine(Death_Coroutine());
+            Died?.Invoke(this);
         }
     }
     private void ApplyStateColor()
