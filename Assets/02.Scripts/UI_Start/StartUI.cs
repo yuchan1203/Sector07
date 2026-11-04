@@ -32,8 +32,25 @@ public class StartUI : MonoBehaviour
 
     private bool _busy;
 
+    private bool HasAllReferences()
+    {
+        if (_loginPanel == null || _signUpPanel == null || _loginIdInput == null || _saveIdToggle == null
+            || _fade == null || _flash == null || _statusText == null || _loadingBar == null)
+        {
+            GameLogger.LogError("StartUI: 인스펙터 참조가 비어 있습니다. 패널/입력창/페이드 연결을 확인하세요.");
+            return false;
+        }
+        return true;
+    }
+
     private void Start()
     {
+        if (!HasAllReferences())
+        {
+            enabled = false;
+            return;
+        }
+
         Time.timeScale = 1f;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
