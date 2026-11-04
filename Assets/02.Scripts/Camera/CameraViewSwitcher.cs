@@ -12,6 +12,8 @@ public class CameraViewSwitcher : SingletonBehaviour<CameraViewSwitcher>
     [SerializeField] private CameraViewSettings[] _views;
     [SerializeField] private CameraState _currentMode = CameraState.FirstPerson;
     [SerializeField] private float _rotationSpeed = 200f;
+    [Tooltip("꺼 두면 시점을 바꿀 수 없다. 이 게임은 1인칭으로 고정한다.")]
+    [SerializeField] private bool _allowViewSwitch = false;
 
     [Header("Recoil")]
     [SerializeField] private bool _useRecoil = true;
@@ -107,6 +109,11 @@ public class CameraViewSwitcher : SingletonBehaviour<CameraViewSwitcher>
         {
             _orbitAngles = new CameraOrbitAngles(_views, _currentMode);
         }
+        // 시점이 고정이면 현재 뷰 표시는 필요 없다.
+        if (_allowViewSwitch == false && _viewStateText != null)
+        {
+            _viewStateText.gameObject.SetActive(false);
+        }
         UpdateViewStateText();
         UpdateBodyVisibility();
     }
@@ -123,7 +130,7 @@ public class CameraViewSwitcher : SingletonBehaviour<CameraViewSwitcher>
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.V) && _isTransitioning == false)
+        if (Input.GetKeyDown(KeyCode.V))
         {
             SwitchView();
         }
@@ -189,6 +196,10 @@ public class CameraViewSwitcher : SingletonBehaviour<CameraViewSwitcher>
 
     public void SwitchView()
     {
+        if (_allowViewSwitch == false || _isTransitioning)
+        {
+            return;
+        }
         SwitchTo(NextMode(_currentMode));
     }
 

@@ -5199,6 +5199,7 @@ MonoBehaviour:
     inheritPlayerYaw: 0
   _currentMode: 0
   _rotationSpeed: 200
+  _allowViewSwitch: 0
   _useRecoil: 1
   _recoilPitchAmount: 2
   _recoilYawAmount: 1
@@ -28257,7 +28258,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1601970865
 RectTransform:
   m_ObjectHideFlags: 0
