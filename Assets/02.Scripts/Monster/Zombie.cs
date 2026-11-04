@@ -233,12 +233,15 @@ public class Zombie : MonoBehaviour, IDamageAble
     {
         if (_player == null) return;
 
-        if (Vector3.Distance(transform.position, _startPosition) > _comebackDistance)
+        float playerDistance = Vector3.Distance(transform.position, _player.transform.position);
+        // 스폰에서 멀어져도 플레이어가 감지 범위 안에 있으면 계속 쫓는다.
+        if (playerDistance > _detectDistance
+            && Vector3.Distance(transform.position, _startPosition) > _comebackDistance)
         {
             _state = ZombieState.Comeback;
             return;
         }
-        if (Vector3.Distance(transform.position, _player.transform.position) <= _attackRange)
+        if (playerDistance <= _attackRange)
         {
             _attackTimer = 0f;
             _state = ZombieState.Attack;
@@ -250,6 +253,13 @@ public class Zombie : MonoBehaviour, IDamageAble
 
     private void Comeback()
     {
+        // 복귀 중에 플레이어가 다시 감지 범위에 들어오면 복귀를 멈추고 쫓는다.
+        if (_player != null
+            && Vector3.Distance(transform.position, _player.transform.position) <= _detectDistance)
+        {
+            _state = ZombieState.Trace;
+            return;
+        }
         if (!_agent.pathPending && _agent.hasPath && _agent.remainingDistance <= _agent.stoppingDistance)
         {
             // Idle 진입 시 한 번만 정지시킨다.

@@ -8,6 +8,8 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] private float _staminaRecovery = 15f;
     [SerializeField] private float _sprintCost = 10f;
     [SerializeField] private float _jumpCost = 20f;
+    [Tooltip("스태미나가 바닥난 뒤 다시 질주할 수 있게 되는 최소 스태미나")]
+    [SerializeField] private float _sprintResumeStamina = 20f;
 
     [SerializeField] private CharacterController _characterController;
 
@@ -25,6 +27,7 @@ public class PlayerMove : MonoBehaviour
     private float _yVelocity = 0f;
     private int _jumpCount = 0;
     private float _stamina = 0f;
+    private bool _isExhausted = false;
 
     private Animator _animator;
 
@@ -58,7 +61,6 @@ public class PlayerMove : MonoBehaviour
         {
             return;
         }
-        SetStamina(_stamina + Time.deltaTime * _staminaRecovery);
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
@@ -101,13 +103,28 @@ public class PlayerMove : MonoBehaviour
             SetStamina(_stamina - _jumpCost);
         }
         float requiredStamina = _sprintCost * Time.deltaTime;
-        bool isSprint = Input.GetButton("Sprint") && _stamina >= requiredStamina;
+        bool isMoving = direction.sqrMagnitude > 0.01f;
+        bool isSprint = Input.GetButton("Sprint") && isMoving && !_isExhausted && _stamina >= requiredStamina;
         float currentSpeed = _moveSpeed;
 
         if (isSprint)
         {
             currentSpeed = _sprintSpeed;
             SetStamina(_stamina - requiredStamina);
+            // 바닥나면 일정량 회복할 때까지 질주할 수 없다.
+            if (_stamina <= requiredStamina)
+            {
+                _isExhausted = true;
+            }
+        }
+        else
+        {
+            // 질주 중에는 회복하지 않는다.
+            SetStamina(_stamina + Time.deltaTime * _staminaRecovery);
+            if (_isExhausted && _stamina >= _sprintResumeStamina)
+            {
+                _isExhausted = false;
+            }
         }
         if (_animator != null)
         {
