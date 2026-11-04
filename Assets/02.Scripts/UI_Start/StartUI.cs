@@ -2,7 +2,6 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 // 시작 화면의 로그인/회원가입 UI. 계정은 로컬(PlayerPrefs)에만 저장하며, 로그인에 성공하면 게임 씬으로 넘어간다.
@@ -31,11 +30,12 @@ public class StartUI : MonoBehaviour
     [SerializeField] private CanvasGroup _fade;
     [SerializeField] private CanvasGroup _flash;
     [SerializeField] private TMP_Text _statusText;
-    [SerializeField] private RectTransform _loadingBar;
     [SerializeField] private float _introDuration = 1f;
-    [SerializeField] private float _minLoadingTime = 1.6f;
+    [Tooltip("ACCESS GRANTED 문구와 효과음을 보여 준 뒤 로딩 화면으로 넘어가기까지의 시간(초)")]
+    [SerializeField] private float _accessHoldTime = 1.4f;
 
     [Header("씬")]
+    [Tooltip("로그인 성공 후 SceneLoader로 이동할 씬")]
     [SerializeField] private string _gameSceneName = "GameScene";
 
     private const int MinIdLength = 3;
@@ -50,7 +50,7 @@ public class StartUI : MonoBehaviour
         if (_loginPanel == null || _signUpPanel == null || _loginIdInput == null || _loginPasswordInput == null
             || _saveIdToggle == null || _signUpIdInput == null || _signUpPasswordInput == null || _signUpConfirmInput == null
             || _loginMessage == null || _signUpMessage == null
-            || _fade == null || _flash == null || _statusText == null || _loadingBar == null)
+            || _fade == null || _flash == null || _statusText == null)
         {
             GameLogger.LogError("StartUI: 인스펙터 참조가 비어 있습니다. 패널/입력창/페이드 연결을 확인하세요.");
             return false;
@@ -76,7 +76,6 @@ public class StartUI : MonoBehaviour
         _signUpPanel.SetActive(false);
         _loginPanel.SetActive(false);
         _statusText.gameObject.SetActive(false);
-        _loadingBar.parent.gameObject.SetActive(false);
         StartCoroutine(Intro_Coroutine());
     }
 
@@ -333,30 +332,12 @@ public class StartUI : MonoBehaviour
         yield return FadeToBlack_Coroutine(0.5f);
 
         _statusText.gameObject.SetActive(true);
-        _loadingBar.parent.gameObject.SetActive(true);
         _statusText.text = "ACCESS GRANTED";
         SoundManager.Play(SfxId.LoginSuccess);
-        SetBar(0f);
 
-        AsyncOperation load = SceneManager.LoadSceneAsync(_gameSceneName);
-        load.allowSceneActivation = false;
-
-        float elapsed = 0f;
-        while (elapsed < _minLoadingTime || load.progress < 0.9f)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            float shown = Mathf.Min(elapsed / _minLoadingTime, Mathf.Clamp01(load.progress / 0.9f));
-            SetBar(shown);
-            if (elapsed > _minLoadingTime * 0.45f)
-            {
-                _statusText.text = "구역 진입 중...";
-            }
-            yield return null;
-        }
-
-        SetBar(1f);
-        yield return new WaitForSecondsRealtime(0.2f);
-        load.allowSceneActivation = true;
+        // 효과음이 끝까지 들리도록 잠시 기다린 뒤, 실제 로딩은 LoadingScene이 맡는다.
+        yield return new WaitForSecondsRealtime(_accessHoldTime);
+        SceneLoader.Load(_gameSceneName);
     }
 
     private IEnumerator Quit_Coroutine()
@@ -370,8 +351,4 @@ public class StartUI : MonoBehaviour
 #endif
     }
 
-    private void SetBar(float value)
-    {
-        _loadingBar.localScale = new Vector3(Mathf.Clamp01(value), 1f, 1f);
-    }
 }

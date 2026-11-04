@@ -12,9 +12,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 폴더 구조
 
-`Assets/`는 번호 접두사 폴더(`01.Scenes`, `02.Scripts`, `03.Prefabs`, `04.Images`, `05.Models`, `06.Sounds`, `07.Animations`, `08.Fonts`, `09.Materials`, `10.Datas`, `11. Textures`)로 구성된다. 에셋은 이 분류에 맞춰 배치한다. 폴더 이동은 Unity 에디터 안에서 해야 `.meta` GUID 참조가 유지된다. 단일 씬은 `Assets/01.Scenes/GameScene.unity`.
+`Assets/`는 번호 접두사 폴더(`01.Scenes`, `02.Scripts`, `03.Prefabs`, `04.Images`, `05.Models`, `06.Sounds`, `07.Animations`, `08.Fonts`, `09.Materials`, `10.Datas`, `11. Textures`)로 구성된다. 에셋은 이 분류에 맞춰 배치한다. 폴더 이동은 Unity 에디터 안에서 해야 `.meta` GUID 참조가 유지된다. 씬은 `Assets/01.Scenes/`의 `StartScene`(로그인) → `LoadingScene`(로딩) → `GameScene`(플레이) 순서로 이어지며 모두 Build Settings에 들어 있다.
 
-스크립트는 `Assets/02.Scripts/` 아래 기능별 폴더(Camera, Core, Debug, Environment, Manager, Monster, Player, UI_Minimap, UI_PlayerStats, VFX, Weapon)로 나뉜다. 어셈블리 정의(asmdef)는 없고 모두 `Assembly-CSharp`에 속한다.
+스크립트는 `Assets/02.Scripts/` 아래 기능별 폴더(Camera, Core, Debug, Environment, Manager, Monster, Player, Sound, UI_Damage, UI_Loading, UI_Minimap, UI_Objective, UI_PlayerStats, UI_Start, VFX, Weapon)로 나뉜다. 어셈블리 정의(asmdef)는 없고 모두 `Assembly-CSharp`에 속한다.
 
 ## 아키텍처
 
@@ -22,6 +22,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **데미지 계약**: `Core/IDamageAble.TakeDamage(DamageInfo)`와 `DamageInfo`(Value, HitPoint, HitNormal) 구조체. 총(`PlayerGunFire`), 폭탄(`Bomb`) 등 공격 쪽은 대상의 구체 클래스를 모르고 `IDamageAble`만 호출한다. `Zombie`, `Box`, `Drum`, `PlayerHit` 등이 이를 구현한다. 새 피격 대상은 이 인터페이스를 구현한다.
 - **좀비 AI**: `Zombie`가 `ZombieState`(Idle/Trace/Comeback/Attack) 열거형 기반의 switch 상태머신으로 동작하며 `CharacterController`로 이동한다. 플레이어는 `Player` 태그로 `Start`에서 찾는다. 체력바는 `ZombieHealthBar`가 별도 컴포넌트로 표시한다.
 - **UI**: `UI_PlayerStats`(체력바, 총알 텍스트)는 플레이어 컴포넌트의 공개 읽기 프로퍼티(`BulletCount`, `MaxBulletCount` 등)를 조회해 표시한다. `UI_Minimap`은 `MinimapCamera`와 함께 동작한다.
+- **씬 이동**: 씬을 바꿀 때는 `SceneManager.LoadScene`을 직접 부르지 않고 `SceneLoader.Load(씬 이름, 문구, 최소 대기 시간)`을 쓴다. 가벼운 `LoadingScene`을 먼저 열어 이전 씬을 내린 뒤 `LoadingUI`가 목표 씬을 비동기로 불러온다. 새 씬은 Build Settings에 추가해야 한다.
+- **효과음**: `SoundManager`(씬마다 하나)가 `SoundBank` 에셋(`Assets/10.Datas/SoundBank.asset`)의 `SfxId`별 클립을 재생한다. 코드에서는 `SoundManager.Play(SfxId)`(화면 소리), `SoundManager.PlayAt(SfxId, 위치)`(위치 소리)만 호출하며, 씬에 매니저가 없으면 조용히 무시된다. 무기별 소리는 `WeaponData`의 `SfxId` 필드로 정한다. 새 소리는 `SfxId` 맨 아래에 추가하고 `SoundBank`에 연결한다.
 - **로깅**: `GameLogger.Log`는 `[Conditional("ENABLE_LOG")]`이므로 스크립팅 심볼 `ENABLE_LOG`가 정의된 경우에만 호출이 컴파일된다. Warning/Error는 항상 출력된다. `Debug.Log` 대신 `GameLogger`를 사용한다.
 - **입력**: 프로젝트에 `InputSystem_Actions.inputactions`가 있지만, 현재 스크립트(예: `PlayerGunFire`)는 레거시 `Input.GetKeyDown`/`GetButton`을 사용한다. 기존 코드 스타일에 맞춰 작성하되, 입력 방식을 바꿀 때는 Player Settings의 Active Input Handling 설정을 확인한다.
 

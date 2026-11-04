@@ -94,8 +94,8 @@ public class GameManager : SingletonBehaviour<GameManager>
     // 다시 시작 버튼 OnClick
     public void Restart()
     {
-        Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        // 로딩 화면은 짧게만 보여 준다.
+        SceneLoader.Load(SceneManager.GetActiveScene().name, "구역 재진입 중...", 0.6f);
     }
 
     // 게임 종료 버튼 OnClick
