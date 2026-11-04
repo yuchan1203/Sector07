@@ -6,6 +6,21 @@ public enum ObjectiveType
     KillAll,    // 단계의 좀비 그룹을 모두 처치
     ReachArea,  // 목표 지점 반경 안에 도착
     Survive,    // 정해진 시간 동안 버티기
+    Action,     // 튜토리얼: 지정한 조작을 해 보기
+}
+
+// 튜토리얼 단계에서 확인하는 조작. 레거시 Input 기준이다.
+public enum TutorialAction
+{
+    Move,         // WASD로 이동 (초)
+    Look,         // 마우스로 둘러보기 (이동량)
+    Jump,         // 점프 (횟수)
+    Sprint,       // Shift 질주 (초)
+    Fire,         // 발사 버튼 (횟수)
+    Aim,          // 우클릭 조준 (초)
+    Reload,       // R 재장전 (횟수)
+    Melee,        // F 근접 공격 (횟수)
+    SwitchWeapon, // C 무기 교체 (횟수)
 }
 
 // 한 단계(구역)의 목표와 배치 정보.
@@ -25,6 +40,14 @@ public class StageInfo
     [Tooltip("Survive 버틸 시간(초)")]
     [SerializeField] private float _surviveSeconds = 30f;
 
+    [Header("튜토리얼")]
+    [Tooltip("켜면 HUD에 STAGE 대신 TUTORIAL로 표시하고, 클리어 기록에서 제외한다.")]
+    [SerializeField] private bool _isTutorial;
+    [Tooltip("Action 목표에서 확인할 조작")]
+    [SerializeField] private TutorialAction _action;
+    [Tooltip("Action 목표를 채우는 양. 조작에 따라 초 또는 횟수.")]
+    [SerializeField] private float _actionAmount = 1f;
+
     [Tooltip("이 단계를 마치면 얻는 무기 (선택)")]
     [SerializeField] private WeaponData _rewardWeapon;
 
@@ -35,6 +58,9 @@ public class StageInfo
     public Transform GoalPoint => _goalPoint;
     public float GoalRadius => _goalRadius;
     public float SurviveSeconds => _surviveSeconds;
+    public bool IsTutorial => _isTutorial;
+    public TutorialAction Action => _action;
+    public float ActionAmount => _actionAmount;
 }
 
 // 단계별 목표를 진행하고, 모두 끝나면 게임을 클리어시킨다.
@@ -52,12 +78,32 @@ public class LevelManager : SingletonBehaviour<LevelManager>
     private int _totalKills;
     private string _progressText = "";
     private Transform _player;
+    private float _actionProgress;
+    private int _tutorialCount;
 
     // 목표 문구나 진행 문구가 바뀔 때만 알린다.
     public event Action ObjectiveChanged;
 
     public int StageCount => _stages != null ? _stages.Length : 0;
     public int StageNumber => _stageIndex + 1;
+
+    // HUD 상단 문구. 튜토리얼 단계는 TUTORIAL, 이후는 STAGE로 따로 센다.
+    public string StageLabel
+    {
+        get
+        {
+            StageInfo stage = CurrentStage;
+            if (stage == null)
+            {
+                return "";
+            }
+            if (stage.IsTutorial)
+            {
+                return "TUTORIAL " + StageNumber + " / " + _tutorialCount;
+            }
+            return "STAGE " + (StageNumber - _tutorialCount) + " / " + (StageCount - _tutorialCount);
+        }
+    }
     public string ObjectiveTitle => CurrentStage != null ? CurrentStage.Title : "";
     public string ProgressText => _progressText;
     public float ElapsedTime => _elapsed;
@@ -76,7 +122,15 @@ public class LevelManager : SingletonBehaviour<LevelManager>
         // 아직 시작하지 않은 단계의 좀비는 꺼 둔다.
         foreach (StageInfo stage in _stages)
         {
-            if (stage != null && stage.ZombieGroup != null)
+            if (stage == null)
+            {
+                continue;
+            }
+            if (stage.IsTutorial)
+            {
+                _tutorialCount++;
+            }
+            if (stage.ZombieGroup != null)
             {
                 stage.ZombieGroup.SetActive(false);
             }
@@ -134,6 +188,13 @@ public class LevelManager : SingletonBehaviour<LevelManager>
             GameLogger.LogWarning("LevelManager: KillAll 단계에 좀비가 없어 바로 넘어갑니다. (" + stage.Title + ")");
         }
         _surviveLeft = stage.SurviveSeconds;
+        _actionProgress = 0f;
+        // 클리어 기록은 튜토리얼이 끝난 뒤부터 잰다.
+        if (!stage.IsTutorial && (index == 0 || _stages[index - 1].IsTutorial))
+        {
+            _elapsed = 0f;
+            _totalKills = 0;
+        }
         _progressText = "";
         UpdateObjective();
         ObjectiveChanged?.Invoke();
@@ -170,6 +231,11 @@ public class LevelManager : SingletonBehaviour<LevelManager>
                 progress = "버티기 " + Mathf.CeilToInt(Mathf.Max(0f, _surviveLeft)) + "초";
                 done = _surviveLeft <= 0f;
                 break;
+            case ObjectiveType.Action:
+                _actionProgress += MeasureAction(stage.Action);
+                progress = FormatActionProgress(stage);
+                done = _actionProgress >= stage.ActionAmount;
+                break;
         }
 
         if (progress != _progressText)
@@ -180,6 +246,52 @@ public class LevelManager : SingletonBehaviour<LevelManager>
         if (done)
         {
             CompleteStage();
+        }
+    }
+
+    // 이번 프레임에 해당 조작을 얼마나 했는지 (시간형은 초, 횟수형은 횟수).
+    private static float MeasureAction(TutorialAction action)
+    {
+        switch (action)
+        {
+            case TutorialAction.Move:
+                return Mathf.Abs(Input.GetAxisRaw("Horizontal")) + Mathf.Abs(Input.GetAxisRaw("Vertical")) > 0f ? Time.deltaTime : 0f;
+            case TutorialAction.Look:
+                return Mathf.Abs(Input.GetAxis("Mouse X")) + Mathf.Abs(Input.GetAxis("Mouse Y"));
+            case TutorialAction.Jump:
+                return Input.GetButtonDown("Jump") ? 1f : 0f;
+            case TutorialAction.Sprint:
+                bool moving = Mathf.Abs(Input.GetAxisRaw("Horizontal")) + Mathf.Abs(Input.GetAxisRaw("Vertical")) > 0f;
+                return Input.GetButton("Sprint") && moving ? Time.deltaTime : 0f;
+            case TutorialAction.Fire:
+                return Input.GetButtonDown("Fire1") ? 1f : 0f;
+            case TutorialAction.Aim:
+                return Input.GetButton("Fire2") ? Time.deltaTime : 0f;
+            case TutorialAction.Reload:
+                return Input.GetKeyDown(KeyCode.R) ? 1f : 0f;
+            case TutorialAction.Melee:
+                return Input.GetKeyDown(KeyCode.F) ? 1f : 0f;
+            case TutorialAction.SwitchWeapon:
+                return Input.GetKeyDown(KeyCode.C) ? 1f : 0f;
+            default:
+                return 0f;
+        }
+    }
+
+    private string FormatActionProgress(StageInfo stage)
+    {
+        float amount = Mathf.Max(0.0001f, stage.ActionAmount);
+        float shown = Mathf.Min(_actionProgress, amount);
+        switch (stage.Action)
+        {
+            case TutorialAction.Move:
+            case TutorialAction.Sprint:
+            case TutorialAction.Aim:
+                return Mathf.FloorToInt(shown) + " / " + Mathf.CeilToInt(amount) + "초";
+            case TutorialAction.Look:
+                return Mathf.FloorToInt(shown / amount * 100f) + "%";
+            default:
+                return Mathf.FloorToInt(shown) + " / " + Mathf.CeilToInt(amount);
         }
     }
 
@@ -201,6 +313,10 @@ public class LevelManager : SingletonBehaviour<LevelManager>
         GiveReward(CurrentStage);
         if (_stageIndex + 1 < StageCount)
         {
+            if (CurrentStage.IsTutorial && !_stages[_stageIndex + 1].IsTutorial)
+            {
+                NoticeUI.Show("튜토리얼 완료!  본 구역으로 진입합니다");
+            }
             StartStage(_stageIndex + 1);
             return;
         }

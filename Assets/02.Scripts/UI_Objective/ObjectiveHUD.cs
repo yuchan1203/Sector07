@@ -39,7 +39,7 @@ public class ObjectiveHUD : MonoBehaviour
     private void Refresh()
     {
         LevelManager level = LevelManager.Instance;
-        _stageText.text = "STAGE " + level.StageNumber + " / " + level.StageCount;
+        _stageText.text = level.StageLabel;
         _titleText.text = level.ObjectiveTitle;
         _progressText.text = level.ProgressText;
     }
