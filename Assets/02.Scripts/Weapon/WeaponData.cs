@@ -64,6 +64,15 @@ public class WeaponData : ScriptableObject
     [Tooltip("공격 버튼을 누른 뒤 실제로 맞는 시점 (초). 휘두르는 동작에 맞춘다")]
     [SerializeField] private float _meleeHitDelay = 0.45f;
 
+    [Header("효과음")]
+    [Tooltip("쏘거나 휘두르거나 던질 때")]
+    [SerializeField] private SfxId _fireSfx;
+    [SerializeField] private SfxId _reloadSfx;
+    [Tooltip("탄이 없는데 쏘려고 할 때")]
+    [SerializeField] private SfxId _emptySfx;
+    [Tooltip("근접 공격이 맞았을 때, 또는 투사체가 터질 때 더해지는 소리")]
+    [SerializeField] private SfxId _impactSfx;
+
     [Header("UI")]
     [SerializeField] private Sprite _icon;
     [Tooltip("획득 안내 등에 쓰는 한국어 이름")]
@@ -113,6 +122,11 @@ public class WeaponData : ScriptableObject
     public float MeleeRange => _meleeRange;
     public float MeleeRadius => _meleeRadius;
     public float MeleeHitDelay => _meleeHitDelay;
+
+    public SfxId FireSfx => _fireSfx;
+    public SfxId ReloadSfx => _reloadSfx;
+    public SfxId EmptySfx => _emptySfx;
+    public SfxId ImpactSfx => _impactSfx;
 
     public Sprite Icon => _icon;
     public string DisplayName => string.IsNullOrEmpty(_displayName) ? _type.ToString() : _displayName;

@@ -310,18 +310,23 @@ public class LevelManager : SingletonBehaviour<LevelManager>
 
     private void CompleteStage()
     {
-        GiveReward(CurrentStage);
+        StageInfo completed = CurrentStage;
+        GiveReward(completed);
         if (_stageIndex + 1 < StageCount)
         {
-            if (CurrentStage.IsTutorial && !_stages[_stageIndex + 1].IsTutorial)
+            if (completed.IsTutorial && !_stages[_stageIndex + 1].IsTutorial)
             {
                 NoticeUI.Show("튜토리얼 완료!  본 구역으로 진입합니다");
             }
+            // 튜토리얼 단계 사이는 가벼운 완료음, 새 목표가 나올 때는 목표 갱신음. 무기 획득음과 겹치면 조금 늦춘다.
+            SfxId cue = _stages[_stageIndex + 1].IsTutorial ? SfxId.TutorialComplete : SfxId.NewObjective;
+            SoundManager.Play(cue, completed.RewardWeapon != null ? 0.7f : 0f);
             StartStage(_stageIndex + 1);
             return;
         }
 
         _finished = true;
+        SoundManager.Play(SfxId.GameClear);
         GameManager.Instance.GameClear();
         if (_clearUI != null)
         {

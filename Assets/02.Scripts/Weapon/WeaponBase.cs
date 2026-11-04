@@ -44,6 +44,7 @@ public abstract class WeaponBase : IWeapon
         {
             _ammo--;
         }
+        SoundManager.Play(_data.FireSfx);
         return true;
     }
 
@@ -56,6 +57,7 @@ public abstract class WeaponBase : IWeapon
         {
             return;
         }
+        SoundManager.Play(_data.ReloadSfx);
         if (_data.ReloadTime <= 0f)
         {
             _ammo = MaxAmmo;

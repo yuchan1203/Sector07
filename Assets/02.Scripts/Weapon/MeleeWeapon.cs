@@ -53,6 +53,7 @@ public class MeleeWeapon : WeaponBase
 
         // 한 대상에 콜라이더가 여러 개여도 한 번만 맞힌다.
         _hitTargets.Clear();
+        bool hitAny = false;
         foreach (Collider collider in colliders)
         {
             if (collider.transform.IsChildOf(_owner))
@@ -65,12 +66,17 @@ public class MeleeWeapon : WeaponBase
                 continue;
             }
             Vector3 hitPoint = collider.ClosestPoint(center);
+            hitAny = true;
             target.TakeDamage(new DamageInfo
             {
                 Value = _data.Damage,
                 HitPoint = hitPoint,
                 HitNormal = (center - hitPoint).normalized
             });
+        }
+        if (hitAny)
+        {
+            SoundManager.PlayAt(_data.ImpactSfx, center);
         }
     }
 }

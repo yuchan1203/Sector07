@@ -17,6 +17,14 @@ PrefabInstance:
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4865222203751357048, guid: 526fd8527de9e35479e42a22ebcec4f3, type: 3}
+      propertyPath: _noticeSfx
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 4865222203751357048, guid: 526fd8527de9e35479e42a22ebcec4f3, type: 3}
+      propertyPath: _voicePitch
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 4865222203751357048, guid: 526fd8527de9e35479e42a22ebcec4f3, type: 3}
       propertyPath: _attackRange
       value: 1.8
       objectReference: {fileID: 0}

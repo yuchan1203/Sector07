@@ -40,6 +40,7 @@ public class BombProjectile : MonoBehaviour
             ParticleSystem effect = Instantiate(_explosionEffectPrefab, transform.position, Quaternion.identity);
             effect.Play();
         }
+        SoundManager.PlayAt(_data.ImpactSfx, transform.position);
         ApplyAreaDamage();
         Destroy(gameObject);
     }

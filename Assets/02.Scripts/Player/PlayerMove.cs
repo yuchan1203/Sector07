@@ -23,7 +23,10 @@ public class PlayerMove : MonoBehaviour
     private const float SprintMotion = 2f;
     private const int MaxJumps = 2;
     private const float MaxStamina = 100f;
+    // 이 시간 이상 공중에 있다가 내려앉아야 착지음을 낸다. (계단이나 경사에서 잠깐 뜨는 것은 제외)
+    private const float LandSoundMinAirTime = 0.25f;
 
+    private float _airTime = 0f;
     private float _yVelocity = 0f;
     private int _jumpCount = 0;
     private float _stamina = 0f;
@@ -90,9 +93,15 @@ public class PlayerMove : MonoBehaviour
         if (_characterController.isGrounded == false)
         {
             _yVelocity += Gravity * Time.deltaTime;
+            _airTime += Time.deltaTime;
         }
         else
         {
+            if (_airTime >= LandSoundMinAirTime)
+            {
+                SoundManager.Play(SfxId.PlayerLand);
+            }
+            _airTime = 0f;
             _yVelocity = -1f;
             _jumpCount = 0;
         }

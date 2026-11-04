@@ -335,6 +335,7 @@ public class StartUI : MonoBehaviour
         _statusText.gameObject.SetActive(true);
         _loadingBar.parent.gameObject.SetActive(true);
         _statusText.text = "ACCESS GRANTED";
+        SoundManager.Play(SfxId.LoginSuccess);
         SetBar(0f);
 
         AsyncOperation load = SceneManager.LoadSceneAsync(_gameSceneName);

@@ -174,6 +174,8 @@ public class GameManager : SingletonBehaviour<GameManager>
         _stateText.text = "게임오버";
         _stateText.color = Color.red;
         SetGameOverUIActive(true);
+        // 쓰러지는 소리가 먼저 들리도록 잠시 뒤에 낸다.
+        SoundManager.Play(SfxId.GameOver, 0.8f);
         if (_playerAnimator != null)
         {
             _playerAnimator.SetFloat(AnimatorParams.MoveMotion, 0f);

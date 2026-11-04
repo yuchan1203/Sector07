@@ -134,6 +134,7 @@ public class WeaponSwitcher : MonoBehaviour
             return false;
         }
         _unlocked[index] = true;
+        SoundManager.Play(SfxId.GetWeapon);
         if (equip)
         {
             Equip(index);
@@ -259,6 +260,15 @@ public class WeaponSwitcher : MonoBehaviour
 
     private void TryAttack(IWeapon weapon)
     {
+        // 탄이 없으면 버튼을 새로 누를 때마다 한 번만 딸깍 소리를 낸다. (누르고 있는 동안 반복하지 않는다)
+        if (weapon.UsesAmmo && weapon.CurrentAmmo <= 0 && !weapon.IsReloading)
+        {
+            if (Input.GetButtonDown("Fire1"))
+            {
+                SoundManager.Play(weapon.Data.EmptySfx);
+            }
+            return;
+        }
         if (_fireTimer > 0f)
         {
             return;

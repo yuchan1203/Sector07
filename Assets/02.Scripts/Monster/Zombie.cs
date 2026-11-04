@@ -26,6 +26,14 @@ public class Zombie : MonoBehaviour, IDamageAble
     [Tooltip("다 쓰러진 뒤 사라지기까지 기다리는 시간(초)")]
     [SerializeField] private float _corpseRemainTime = 1f;
 
+    [Header("효과음")]
+    [Tooltip("플레이어를 처음 발견했을 때 내는 소리. 강화 좀비는 포효로 바꾼다.")]
+    [SerializeField] private SfxId _noticeSfx = SfxId.ZombieGrowl;
+    [Tooltip("1보다 작으면 낮고 굵은 목소리가 된다.")]
+    [SerializeField] private float _voicePitch = 1f;
+    [Tooltip("추적 중에 으르렁거리는 간격(초). 최소~최대 사이에서 무작위로 정한다.")]
+    [SerializeField] private Vector2 _growlInterval = new Vector2(6f, 12f);
+
     [Header("연결")]
     [SerializeField] private GameObject _bloodSprayPrefab;
     [Tooltip("핏자국 이펙트가 반복 재생되므로 이 시간 뒤에 풀로 돌려보낸다(초)")]
@@ -55,6 +63,9 @@ public class Zombie : MonoBehaviour, IDamageAble
     private ZombieState _state = ZombieState.Idle;
     private float _attackTimer = 0f;
     private bool _isAttacking = false;
+    private float _growlTimer = 0f;
+    // 공격 소리를 대미지 직전에 내기 위한 선행 시간(초)
+    private const float AttackSoundLead = 0.5f;
     public event System.Action HealthChanged;
     // 좀비가 쓰러지는 순간 한 번 알린다. (목표 집계용)
     public static event System.Action<Zombie> Died;
@@ -128,11 +139,13 @@ public class Zombie : MonoBehaviour, IDamageAble
         if (_health > 0f)
         {
             PoolManager.Spawn(_bloodSprayPrefab, damageInfo.HitPoint, Quaternion.LookRotation(damageInfo.HitNormal), transform, _bloodSprayDuration);
+            PlayVoice(SfxId.ZombieHit);
             _state = ZombieState.Hit;
             StartCoroutine(Hit_Coroutine());
         }
         else
         {
+            PlayVoice(SfxId.ZombieDeath);
             _state = ZombieState.Death;
             StartCoroutine(Death_Coroutine());
             Died?.Invoke(this);
@@ -230,7 +243,19 @@ public class Zombie : MonoBehaviour, IDamageAble
         {
             _state = ZombieState.Trace;
             _animator.SetTrigger("IdleToMove");
+            PlayVoice(_noticeSfx);
+            ResetGrowlTimer();
         }
+    }
+
+    private void PlayVoice(SfxId id)
+    {
+        SoundManager.PlayAt(id, transform.position, _voicePitch);
+    }
+
+    private void ResetGrowlTimer()
+    {
+        _growlTimer = Random.Range(_growlInterval.x, Mathf.Max(_growlInterval.x, _growlInterval.y));
     }
     private void Trace()
     {
@@ -250,6 +275,12 @@ public class Zombie : MonoBehaviour, IDamageAble
             _state = ZombieState.Attack;
             _animator.SetTrigger("MoveAttackDelay");
             return;
+        }
+        _growlTimer -= Time.deltaTime;
+        if (_growlTimer <= 0f)
+        {
+            PlayVoice(SfxId.ZombieGrowl);
+            ResetGrowlTimer();
         }
         _agent.SetDestination(_player.transform.position);
     }
@@ -297,8 +328,11 @@ public class Zombie : MonoBehaviour, IDamageAble
         _isAttacking = true;
         _animator.SetTrigger("StartAttack");
         Stop();
-        // 애니메이션에서 팔을 뻗는 시점에 대미지를 준다.
-        yield return new WaitForSeconds(_attackHitDelay);
+        // 애니메이션에서 팔을 뻗는 시점에 대미지를 준다. 공격 소리는 그 직전에 낸다.
+        float soundLead = Mathf.Min(AttackSoundLead, _attackHitDelay);
+        yield return new WaitForSeconds(_attackHitDelay - soundLead);
+        PlayVoice(SfxId.ZombieAttack);
+        yield return new WaitForSeconds(soundLead);
         Collider[] colliders = Physics.OverlapSphere(transform.position, _attackRange, LayerMask.GetMask("Player"));
         foreach (var col in colliders)
         {

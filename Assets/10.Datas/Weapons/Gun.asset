@@ -40,6 +40,10 @@ MonoBehaviour:
   _meleeRange: 1.2
   _meleeRadius: 1
   _meleeHitDelay: 0.45
+  _fireSfx: 1
+  _reloadSfx: 5
+  _emptySfx: 6
+  _impactSfx: 0
   _icon: {fileID: 21300000, guid: fcdb0f9f57bb9714dab2296203ae654c, type: 3}
   _displayName: "\uAD8C\uCD1D"
   _viewModelPrefab: {fileID: 1694449805434718, guid: 6f1a7354265853f44b0ed5e2e43676ad, type: 3}

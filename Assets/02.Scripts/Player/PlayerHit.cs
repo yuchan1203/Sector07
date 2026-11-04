@@ -25,12 +25,17 @@ public class PlayerHit : MonoBehaviour, IDamageAble
         if (_health <= 0f)
         {
             // 쓰러지는 동작을 보여 주기 위해 오브젝트를 파괴하지 않는다.
+            SoundManager.Play(SfxId.PlayerDeath);
             PlayDeath();
             GameManager.Instance.GameOver();
         }
-        else if (_animator != null)
+        else
         {
-            _animator.SetTrigger(AnimatorParams.Hit);
+            SoundManager.Play(SfxId.PlayerHit);
+            if (_animator != null)
+            {
+                _animator.SetTrigger(AnimatorParams.Hit);
+            }
         }
     }
 
