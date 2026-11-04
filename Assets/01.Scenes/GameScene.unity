@@ -1118,6 +1118,7 @@ GameObject:
   - component: {fileID: 59073616}
   - component: {fileID: 59073617}
   - component: {fileID: 59073621}
+  - component: {fileID: 59073622}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -1311,6 +1312,74 @@ MonoBehaviour:
   _crossHair: {fileID: 1448692661}
   _weaponStateImage: {fileID: 535599079}
   _crossHairRotationSpeed: 360
+--- !u!114 &59073622
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59073607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1fda591bf9b29d847a2b260fc74c07cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerFootsteps
+  _clips:
+  - {fileID: 8300000, guid: d4bd5d534336847409f6971341ef8550, type: 3}
+  - {fileID: 8300000, guid: e291157425cb7ec49aa1dd2adcdbe5f5, type: 3}
+  - {fileID: 8300000, guid: 4a46c32b0e15cf34a954c0dd09277117, type: 3}
+  - {fileID: 8300000, guid: 58d58fd8d55a33a478830d4b9d752b4b, type: 3}
+  - {fileID: 8300000, guid: 21076e9ca3245b3479852d63e73c1f6d, type: 3}
+  - {fileID: 8300000, guid: 6a4808338018a0d4787955e4c29d244a, type: 3}
+  - {fileID: 8300000, guid: b634d17ccea5aa749b87a48681122b88, type: 3}
+  - {fileID: 8300000, guid: d7b9a33c1a41230438311a7957d6c402, type: 3}
+  - {fileID: 8300000, guid: 58b5f320e8e563441b3abbe91b42a70d, type: 3}
+  - {fileID: 8300000, guid: 4d8c3e4ba40fcb149891763062244929, type: 3}
+  - {fileID: 8300000, guid: 3056523074ab1484a83c7ac1100c385f, type: 3}
+  - {fileID: 8300000, guid: 1d428ee45a0cb6a4bb60f65c00af41a6, type: 3}
+  - {fileID: 8300000, guid: 43ca33c169383cf4ebf5f8ca769b7172, type: 3}
+  - {fileID: 8300000, guid: 9de65f2748a96d7408e61b6ac199c2af, type: 3}
+  - {fileID: 8300000, guid: 4297183e445992e4890a3f04708c7450, type: 3}
+  - {fileID: 8300000, guid: 7a23be7740cc0cb48b4ce72c6d8fac80, type: 3}
+  - {fileID: 8300000, guid: fa4bc052d1736db48953354d0340842f, type: 3}
+  - {fileID: 8300000, guid: c787e619a57f8c941b31cee8a711d03f, type: 3}
+  - {fileID: 8300000, guid: 767f3bc97d4f0724da0982aeea995f74, type: 3}
+  - {fileID: 8300000, guid: 388455ee43bdca843b8089d0ace77366, type: 3}
+  - {fileID: 8300000, guid: 171a040701e427d458bb2ba88dfa813e, type: 3}
+  - {fileID: 8300000, guid: d298e44966236a547a95c76d2f5d21ca, type: 3}
+  - {fileID: 8300000, guid: e2c27e3a195e4d04cb442c29ddeb5e35, type: 3}
+  - {fileID: 8300000, guid: a0249ee57d0158f478d4c7c3f2094928, type: 3}
+  - {fileID: 8300000, guid: b866ccb14221eff409869ac531d01f0f, type: 3}
+  - {fileID: 8300000, guid: 55c0bd86b7e4ccc46b4ac72837b07306, type: 3}
+  - {fileID: 8300000, guid: 8f6b4673bb0e8e146a09cfdb4b682019, type: 3}
+  - {fileID: 8300000, guid: 8101b338879329e4f9576ee70a75677b, type: 3}
+  - {fileID: 8300000, guid: b1f7cbb094619ae4b9dbeda1f41d65d5, type: 3}
+  - {fileID: 8300000, guid: 0e6c23b30a4981941a0f3d6e75928ba0, type: 3}
+  - {fileID: 8300000, guid: 39331237d6792024aa7082b2f8ee0e78, type: 3}
+  - {fileID: 8300000, guid: 366f082a12826e74aa27b536c66a042f, type: 3}
+  - {fileID: 8300000, guid: 54b14665cdfdf9b4484e988815c2d5c3, type: 3}
+  - {fileID: 8300000, guid: cb45d070ca2a7d44e996236c390113bd, type: 3}
+  - {fileID: 8300000, guid: 019fc3f38108e8648aaa72851dda0926, type: 3}
+  - {fileID: 8300000, guid: a85f1ab2a05cc5848836957b37f09fbe, type: 3}
+  - {fileID: 8300000, guid: e69ee37a0742e5247862b66c921601d2, type: 3}
+  - {fileID: 8300000, guid: bcc4669d3ac493245804134a475e9be2, type: 3}
+  - {fileID: 8300000, guid: 10fbfdaf75b2ffe4c9b05d32b24e87c5, type: 3}
+  - {fileID: 8300000, guid: 78fb824ef8e54524db436a10f868a4fa, type: 3}
+  - {fileID: 8300000, guid: d09421af1ac1e654caa8abf7ce562c9f, type: 3}
+  - {fileID: 8300000, guid: 0ecba78371413264eac46496be965b42, type: 3}
+  - {fileID: 8300000, guid: bae0df708482a3247a2833b3e3367713, type: 3}
+  - {fileID: 8300000, guid: 1fe0f5d2c1973694bae9804faba223af, type: 3}
+  - {fileID: 8300000, guid: c49b0b5e7db7d6a4ba37fac577a64422, type: 3}
+  - {fileID: 8300000, guid: 541651425552d8b45a127a15fb55d50c, type: 3}
+  - {fileID: 8300000, guid: 2a524f90b91da3c479392a8c1bdb6cf6, type: 3}
+  - {fileID: 8300000, guid: 84e5f7b1f3477c443a459e51e423cc78, type: 3}
+  - {fileID: 8300000, guid: a6030438926537a48baaa65e57161631, type: 3}
+  - {fileID: 8300000, guid: a5695b5727c10a4448e3fd711d7504bf, type: 3}
+  _audioSource: {fileID: 0}
+  _volume: 0.6
+  _pitchVariation: 0.08
+  _stepDistance: 2.2
+  _minMoveSpeed: 0.5
 --- !u!1 &70189461
 GameObject:
   m_ObjectHideFlags: 0
