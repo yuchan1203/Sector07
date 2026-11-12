@@ -10,11 +10,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4865222203751357048, guid: 526fd8527de9e35479e42a22ebcec4f3, type: 3}
       propertyPath: _maxHealth
-      value: 300
+      value: 160
       objectReference: {fileID: 0}
     - target: {fileID: 4865222203751357048, guid: 526fd8527de9e35479e42a22ebcec4f3, type: 3}
       propertyPath: _moveSpeed
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 4865222203751357048, guid: 526fd8527de9e35479e42a22ebcec4f3, type: 3}
       propertyPath: _noticeSfx
@@ -30,7 +30,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4865222203751357048, guid: 526fd8527de9e35479e42a22ebcec4f3, type: 3}
       propertyPath: _attackDamage
-      value: 20
+      value: 18
       objectReference: {fileID: 0}
     - target: {fileID: 6989555022610354781, guid: 526fd8527de9e35479e42a22ebcec4f3, type: 3}
       propertyPath: m_LocalScale.x

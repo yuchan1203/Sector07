@@ -7,6 +7,8 @@ public enum ObjectiveType
     ReachArea,  // 목표 지점 반경 안에 도착
     Survive,    // 정해진 시간 동안 버티기
     Action,     // 튜토리얼: 지정한 조작을 해 보기
+    Collect,    // 구역 안쪽의 폭발물(ObjectiveTarget)을 획득
+    DestroyBarrier, // 막힌 길 장애물(ObjectiveTarget)을 폭파
 }
 
 // 튜토리얼 단계에서 확인하는 조작. 레거시 Input 기준이다.
@@ -48,9 +50,20 @@ public class StageInfo
     [Tooltip("Action 목표를 채우는 양. 조작에 따라 초 또는 횟수.")]
     [SerializeField] private float _actionAmount = 1f;
 
+    [Header("구역")]
+    [Tooltip("0이면 구역에 속하지 않는다. 1 이상이면 HUD에 ZONE n / 전체로 표시한다.")]
+    [SerializeField] private int _zone;
+    [Tooltip("Collect는 폭발물 픽업, DestroyBarrier는 장애물. Collect는 이 단계가 시작될 때 켜진다.")]
+    [SerializeField] private ObjectiveTarget _target;
+    [Tooltip("단계가 시작될 때 무전 자막으로 보여 줄 문장. '|'로 나누면 차례로 이어서 보여 준다.")]
+    [SerializeField, TextArea] private string _briefing;
+
     [Tooltip("이 단계를 마치면 얻는 무기 (선택)")]
     [SerializeField] private WeaponData _rewardWeapon;
 
+    public int Zone => _zone;
+    public ObjectiveTarget Target => _target;
+    public string Briefing => _briefing;
     public WeaponData RewardWeapon => _rewardWeapon;
     public string Title => _title;
     public ObjectiveType Type => _type;
@@ -86,6 +99,7 @@ public class LevelManager : SingletonBehaviour<LevelManager>
 
     public int StageCount => _stages != null ? _stages.Length : 0;
     public int StageNumber => _stageIndex + 1;
+    public int ZoneCount { get; private set; }
 
     // HUD 상단 문구. 튜토리얼 단계는 TUTORIAL, 이후는 STAGE로 따로 센다.
     public string StageLabel
@@ -100,6 +114,10 @@ public class LevelManager : SingletonBehaviour<LevelManager>
             if (stage.IsTutorial)
             {
                 return "TUTORIAL " + StageNumber + " / " + _tutorialCount;
+            }
+            if (stage.Zone > 0)
+            {
+                return "ZONE " + stage.Zone + " / " + ZoneCount;
             }
             return "STAGE " + (StageNumber - _tutorialCount) + " / " + (StageCount - _tutorialCount);
         }
@@ -129,6 +147,12 @@ public class LevelManager : SingletonBehaviour<LevelManager>
             if (stage.IsTutorial)
             {
                 _tutorialCount++;
+            }
+            ZoneCount = Mathf.Max(ZoneCount, stage.Zone);
+            // 폭발물은 해당 단계가 시작될 때까지 숨겨 둔다.
+            if (stage.Type == ObjectiveType.Collect && stage.Target != null)
+            {
+                stage.Target.gameObject.SetActive(false);
             }
             if (stage.ZombieGroup != null)
             {
@@ -195,9 +219,29 @@ public class LevelManager : SingletonBehaviour<LevelManager>
             _elapsed = 0f;
             _totalKills = 0;
         }
+        if (stage.Type == ObjectiveType.Collect && stage.Target != null)
+        {
+            stage.Target.gameObject.SetActive(true);
+        }
+        // 구역에 처음 들어설 때 알린다.
+        if (stage.Zone > 0 && (index == 0 || _stages[index - 1].Zone != stage.Zone))
+        {
+            NoticeUI.Show("ZONE " + stage.Zone + "  구역 소탕을 시작한다");
+        }
+        if (!string.IsNullOrEmpty(stage.Briefing))
+        {
+            RadioUI.Show(stage.Briefing.Split('|'));
+        }
         _progressText = "";
         UpdateObjective();
         ObjectiveChanged?.Invoke();
+    }
+
+    // 지금 단계가 이 오브젝트를 폭파하는 단계인지 확인한다.
+    public bool IsCurrentTarget(ObjectiveTarget target)
+    {
+        StageInfo stage = CurrentStage;
+        return stage != null && stage.Type == ObjectiveType.DestroyBarrier && stage.Target == target;
     }
 
     private void UpdateObjective()
@@ -235,6 +279,21 @@ public class LevelManager : SingletonBehaviour<LevelManager>
                 _actionProgress += MeasureAction(stage.Action);
                 progress = FormatActionProgress(stage);
                 done = _actionProgress >= stage.ActionAmount;
+                break;
+            case ObjectiveType.Collect:
+            case ObjectiveType.DestroyBarrier:
+                if (stage.Target == null)
+                {
+                    GameLogger.LogError("LevelManager: 목표 오브젝트가 비어 있어 바로 넘어갑니다. (" + stage.Title + ")");
+                    done = true;
+                    break;
+                }
+                done = stage.Target.IsDone;
+                if (!done && _player != null)
+                {
+                    float targetDistance = FlatDistance(_player.position, stage.Target.transform.position);
+                    progress = (stage.Type == ObjectiveType.Collect ? "폭발물까지 " : "막힌 길까지 ") + Mathf.CeilToInt(targetDistance) + "m";
+                }
                 break;
         }
 

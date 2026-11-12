@@ -689,14 +689,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d9e4c1c13b6dd24f81efc15134f9149, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Zombie
-  _detectDistance: 8
-  _comebackDistance: 10
+  _detectDistance: 12
+  _comebackDistance: 25
   _attackRange: 1.5
-  _attackInterval: 1.2
-  _moveSpeed: 1
-  _maxHealth: 100
-  _attackDamage: 10
+  _attackInterval: 1
+  _moveSpeed: 5.5
+  _maxHealth: 40
+  _attackDamage: 8
+  _attackHitDelay: 1.25
+  _attackRecoverTime: 0.5
+  _hitDuration: 1.2
+  _deathAnimationTime: 1.4
+  _corpseRemainTime: 1
+  _noticeSfx: 11
+  _voicePitch: 1
+  _growlInterval: {x: 6, y: 12}
   _bloodSprayPrefab: {fileID: 1000013355911406, guid: d32aa916f50cac94db11e6f19821a58f, type: 3}
+  _bloodSprayDuration: 1
   _damageTextPrefab: {fileID: 8609549471569271909, guid: 0d267e08b5b5ddf4eb574adc164801e6, type: 3}
   _textSpawnPoint: {fileID: 6989555022610354781}
   _bodyRenderers: []
